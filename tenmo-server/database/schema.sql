@@ -22,7 +22,7 @@ CREATE TABLE transfer_statuses (
 
 CREATE TABLE users (
 	user_id serial,
-	username varchar(50) NOT NULL,
+	username varchar(50) NOT NULL UNIQUE,
 	password_hash varchar(200) NOT NULL,
 	role varchar NOT NULL,
 	CONSTRAINT PK_user PRIMARY KEY (user_id)

@@ -4,6 +4,7 @@ import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.Transfer;
 
 import java.math.BigDecimal;
+import java.security.Principal;
 import java.util.List;
 
 public interface TransferDAO {
@@ -14,6 +15,6 @@ public interface TransferDAO {
 
     Transfer getTransferFromId(int id);
 
-    boolean checksBeforeTransfer(Account depositAccount, Account withdrawalAccount, BigDecimal amount);
+    boolean checksBeforeTransfer(Principal principal, Account depositAccount, Account withdrawalAccount, BigDecimal amount);
 
 }
