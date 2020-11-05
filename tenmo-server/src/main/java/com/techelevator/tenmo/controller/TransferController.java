@@ -44,10 +44,15 @@ public class TransferController {
     @RequestMapping(value = "/transfers/{id}", method = RequestMethod.GET)
     public Transfer getTransferFromTransferId(Principal principal, @PathVariable int id) {
         Transfer result;
-        result = transferDAO.getTransferFromId(id);
+        if (transferDAO.checkBeforeGettingTransfer(principal, id)) {
+            result = transferDAO.getTransferFromId(id);
+        } else {
+            result = null;
+        }
         return result;
     }
 
+    @ResponseStatus(HttpStatus.ACCEPTED)
     @RequestMapping(value = "/transfers", method = RequestMethod.POST)
     public void postTransfer(Principal principal, @RequestBody TransferDTO transferDTO) {
         Account depositAccount = accountDAO.getUserAccountByUserId(transferDTO.getUserIdTo());

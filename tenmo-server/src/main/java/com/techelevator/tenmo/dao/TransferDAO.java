@@ -17,4 +17,5 @@ public interface TransferDAO {
 
     boolean checksBeforeTransfer(Principal principal, Account depositAccount, Account withdrawalAccount, BigDecimal amount);
 
+    boolean checkBeforeGettingTransfer(Principal principal, int id);
 }
