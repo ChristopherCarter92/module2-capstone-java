@@ -2,12 +2,15 @@ package com.techelevator.tenmo;
 
 import com.techelevator.tenmo.models.Account;
 import com.techelevator.tenmo.models.AuthenticatedUser;
+import com.techelevator.tenmo.models.User;
 import com.techelevator.tenmo.models.UserCredentials;
 import com.techelevator.tenmo.services.AccountService;
 import com.techelevator.tenmo.services.AuthenticationService;
 import com.techelevator.tenmo.services.AuthenticationServiceException;
 import com.techelevator.tenmo.services.ServerConnectionException;
 import com.techelevator.view.ConsoleService;
+
+import java.util.List;
 
 public class App {
 
@@ -24,7 +27,8 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 	private static final String MAIN_MENU_OPTION_VIEW_PENDING_REQUESTS = "View your pending requests";
 	private static final String MAIN_MENU_OPTION_LOGIN = "Login as different user";
 	private static final String[] MAIN_MENU_OPTIONS = { MAIN_MENU_OPTION_VIEW_BALANCE, MAIN_MENU_OPTION_SEND_BUCKS, MAIN_MENU_OPTION_VIEW_PAST_TRANSFERS, MAIN_MENU_OPTION_REQUEST_BUCKS, MAIN_MENU_OPTION_VIEW_PENDING_REQUESTS, MAIN_MENU_OPTION_LOGIN, MENU_OPTION_EXIT };
-	
+	private static final String LINE = "-------------------------------";
+
     private AuthenticatedUser currentUser;
     private ConsoleService console;
     private AuthenticationService authenticationService;
@@ -91,13 +95,28 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 	}
 
 	private void sendBucks() {
-		// TODO Auto-generated method stub
-		
+		User[] ourUsers = printAllUsers();
+		User choice = (User)console.getChoiceFromOptions(ourUsers);
+
 	}
 
 	private void requestBucks() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	private User[] printAllUsers(){
+		System.out.println(LINE + "\nUsers \nID			Name\n" + LINE);
+		User[] allUsers = accountService.getAllUsers();
+		for (int i = 0; i < allUsers.length; i++) {
+			if (!currentUser.getUser().getId().equals(allUsers[i].getId())) {
+				int id = allUsers[i].getId();
+				String username = allUsers[i].getUsername();
+				System.out.println(id + "			" + username);
+			}
+		}
+		System.out.println(LINE + "\n");
+		return allUsers;
 	}
 
 

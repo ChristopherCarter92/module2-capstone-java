@@ -23,7 +23,7 @@ public class UserController {
 
     @RequestMapping(value = "/users", method = RequestMethod.GET)
     public List<User> getAllUsers() {
-        List<User> users = new ArrayList<>();
+        List<User> users;
         users = userDAO.findAll();
         return users;
     }

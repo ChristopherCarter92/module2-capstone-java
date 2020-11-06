@@ -39,15 +39,14 @@ public class AccountService {
         return result;
     }
 
-    public List<User> getAllUsers() {
-        List<User> result = new ArrayList<>();
+    public User[] getAllUsers() {
+        User[] result = new User[]{};
         try {
-            HttpEntity<User> entity = restTemplate.exchange(baseUrl + "users", HttpMethod.GET, makeAuthEntity(), User.class);
-//            result = entity.getBody();
+            HttpEntity<User[]> entity = restTemplate.exchange(baseUrl + "users", HttpMethod.GET, makeAuthEntity(), User[].class);
+           result = entity.getBody();
         } catch (ResourceAccessException | RestClientResponseException e){
-
+            System.out.println("Could not find list of Users.");
         }
-
         return result;
     }
 
