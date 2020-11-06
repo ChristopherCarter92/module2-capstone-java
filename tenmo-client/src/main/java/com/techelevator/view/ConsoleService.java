@@ -4,6 +4,7 @@ package com.techelevator.view;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.math.BigDecimal;
 import java.util.Scanner;
 
 public class ConsoleService {
@@ -16,10 +17,21 @@ public class ConsoleService {
 		this.in = new Scanner(input);
 	}
 
-	public Object getChoiceFromOptions(Object[] options) {
+	public Object getChoiceFromOptionsDisplaysMenu(Object[] options) {
 		Object choice = null;
 		while (choice == null) {
 			displayMenuOptions(options);
+			choice = getChoiceFromUserInputForMenu(options);
+		}
+		out.println();
+		return choice;
+	}
+
+	public Object getChoiceFromOptions(Object[] options, String message) {
+		Object choice = null;
+		while (choice == null) {
+			out.print(message);
+			out.flush();
 			choice = getChoiceFromUserInput(options);
 		}
 		out.println();
@@ -27,6 +39,26 @@ public class ConsoleService {
 	}
 
 	private Object getChoiceFromUserInput(Object[] options) {
+		Object choice = null;
+		String userInput = in.nextLine();
+		int selectedOption = -1;
+		try {
+			selectedOption = Integer.valueOf(userInput);
+			if (selectedOption > 0 && selectedOption <= options.length) {
+				choice = options[selectedOption - 1];
+			}
+		} catch (NumberFormatException e) {
+			// eat the exception, an error message will be displayed below since choice will be null
+		}if(selectedOption == 0){
+			choice = -1;
+			System.out.println("\nReturning to menu.");
+		}else if (choice == null) {
+			out.println("\n*** " + userInput + " is not a valid option ***\n");
+		}
+		return choice;
+	}
+
+	private Object getChoiceFromUserInputForMenu(Object[] options) {
 		Object choice = null;
 		String userInput = in.nextLine();
 		try {
@@ -67,6 +99,21 @@ public class ConsoleService {
 			String userInput = in.nextLine();
 			try {
 				result = Integer.parseInt(userInput);
+			} catch(NumberFormatException e) {
+				out.println("\n*** " + userInput + " is not valid ***\n");
+			}
+		} while(result == null);
+		return result;
+	}
+
+	public BigDecimal getUserInputBigDecimal(String prompt) {
+		BigDecimal result = null;
+		do {
+			out.print(prompt+": ");
+			out.flush();
+			String userInput = in.nextLine();
+			try {
+				result = new BigDecimal(userInput);
 			} catch(NumberFormatException e) {
 				out.println("\n*** " + userInput + " is not valid ***\n");
 			}

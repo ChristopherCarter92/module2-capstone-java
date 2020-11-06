@@ -1,7 +1,8 @@
 package com.techelevator.tenmo.services;
 
-import com.techelevator.tenmo.models.Account;
-import com.techelevator.tenmo.models.User;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.techelevator.tenmo.models.*;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -9,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -50,11 +52,59 @@ public class AccountService {
         return result;
     }
 
+    public Transfer sendTransfer(User user, BigDecimal amount, AuthenticatedUser currentUser) throws JsonProcessingException {
+        Transfer result = new Transfer();
+        try{
+            result = restTemplate.exchange(baseUrl + "transfers", HttpMethod.POST, makeTransferEntity(user, amount, currentUser), Transfer.class).getBody();
+        }catch(ResourceAccessException e){
+            System.out.println("Could not complete transfer.");
+        }catch (RestClientResponseException exception){
+//            ObjectMapper mapper = new ObjectMapper();
+//            ErrorDetails details = mapper.readValue(exception.getResponseBodyAsString(), ErrorDetails.class);
+//            System.out.println(details.getMessage());
+            System.out.println(exception.getMessage());
+        }
+        return result;
+    }
+
+    public Transfer[] getAllTransfers() {
+        Transfer[] result = new Transfer[]{};
+        try {
+            HttpEntity<Transfer[]> entity = restTemplate.exchange(baseUrl + "transfers", HttpMethod.GET, makeAuthEntity(), Transfer[].class);
+            result = entity.getBody();
+        } catch (ResourceAccessException | RestClientResponseException e){
+            System.out.println("Could not find list of Transfers.");
+        }
+        return result;
+    }
+
+    public Transfer getTransferDetails(int id) {
+        Transfer result;
+        try {
+            result = restTemplate.exchange(baseUrl + "transfers/" + id, HttpMethod.GET, makeAuthEntity(), Transfer.class).getBody();
+        } catch (ResourceAccessException | RestClientResponseException e) {
+            result = null;
+            System.out.println("Could not get transfer details.");
+        }
+        return result;
+    }
+
     private HttpEntity<Account> makeAccountEntity(Account account) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(authToken);
         return new HttpEntity<>(account, headers);
+    }
+
+    private HttpEntity<TransferDTO> makeTransferEntity(User user, BigDecimal amount, AuthenticatedUser currentUser) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(authToken);
+        TransferDTO transferDTO = new TransferDTO();
+        transferDTO.setUserIdTo(user.getId());
+        transferDTO.setAmount(amount);
+        transferDTO.setUserIdFrom(currentUser.getUser().getId());
+        return new HttpEntity<>(transferDTO, headers);
     }
 
     private HttpEntity<?> makeAuthEntity() {

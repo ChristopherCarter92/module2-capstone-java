@@ -58,8 +58,13 @@ public class JdbcTransferDAO implements TransferDAO {
     @Override
     public Transfer getTransferFromId(int id) {
         Transfer transfer;
-        String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
-                "FROM transfers WHERE transfer_id = ?;";
+        String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, amount, user_from.username AS user_from, " +
+                "user_to.username AS user_to, account_from.account_id AS account_from_id, account_to.account_id AS account_to_id " +
+                "FROM transfers " +
+                "JOIN accounts AS account_from ON transfers.account_from = account_from.account_id " +
+                "JOIN accounts AS account_to ON transfers.account_to = account_to.account_id " +
+                "JOIN users AS user_from ON account_from.user_id = user_from.user_id " +
+                "JOIN users AS user_to ON account_to.user_id = user_to.user_id WHERE transfer_id = ?;";
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, id);
         if (rowSet.next()) {
             transfer = mapRowToTransfer(rowSet);
@@ -116,7 +121,7 @@ public class JdbcTransferDAO implements TransferDAO {
         int principalAccountId = accountDAO.getUserAccountByUserId(principalUserId).getAccountId();
         if (getTransferFromId(id) != null) {
             Transfer transfer = getTransferFromId(id);
-            if (principalAccountId == transfer.getAccountFrom()) {
+            if (principalAccountId == transfer.getAccountFrom() || principalAccountId == transfer.getAccountTo()) {
                 result = true;
             } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can only see transfers from your account.");

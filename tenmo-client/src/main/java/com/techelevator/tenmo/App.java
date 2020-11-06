@@ -1,15 +1,14 @@
 package com.techelevator.tenmo;
 
-import com.techelevator.tenmo.models.Account;
-import com.techelevator.tenmo.models.AuthenticatedUser;
-import com.techelevator.tenmo.models.User;
-import com.techelevator.tenmo.models.UserCredentials;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.techelevator.tenmo.models.*;
 import com.techelevator.tenmo.services.AccountService;
 import com.techelevator.tenmo.services.AuthenticationService;
 import com.techelevator.tenmo.services.AuthenticationServiceException;
 import com.techelevator.tenmo.services.ServerConnectionException;
 import com.techelevator.view.ConsoleService;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class App {
@@ -34,7 +33,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
     private AuthenticationService authenticationService;
     private AccountService accountService;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws JsonProcessingException {
     	App app = new App(new ConsoleService(System.in, System.out), new AuthenticationService(API_BASE_URL), new AccountService(API_BASE_URL));
     	app.run();
     }
@@ -45,7 +44,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		this.accountService = accountService;
 	}
 
-	public void run() {
+	public void run() throws JsonProcessingException {
 		System.out.println("*********************");
 		System.out.println("* Welcome to TEnmo! *");
 		System.out.println("*********************");
@@ -56,10 +55,10 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		}
 	}
 
-	private void mainMenu() {
+	private void mainMenu() throws JsonProcessingException {
     	boolean running = true;
 		while(running) {
-			String choice = (String)console.getChoiceFromOptions(MAIN_MENU_OPTIONS);
+			String choice = (String)console.getChoiceFromOptionsDisplaysMenu(MAIN_MENU_OPTIONS);
 			if(MAIN_MENU_OPTION_VIEW_BALANCE.equals(choice)) {
 				viewCurrentBalance();
 			} else if(MAIN_MENU_OPTION_VIEW_PAST_TRANSFERS.equals(choice)) {
@@ -85,8 +84,13 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 	}
 
 	private void viewTransferHistory() {
-		// TODO Auto-generated method stub
-		
+		Transfer[] allTransfers = printAllTransfers();
+		Object choice = console.getChoiceFromOptions(allTransfers, "Enter Transfer ID to view details (0 to cancel): ");
+		if (choice != null && !choice.equals(-1)) {
+			Transfer transfers = (Transfer)choice;
+			Transfer transferDetails = accountService.getTransferDetails(transfers.getTransferId());
+			printTransferDetails(transferDetails);
+		}
 	}
 
 	private void viewPendingRequests() {
@@ -94,10 +98,14 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		
 	}
 
-	private void sendBucks() {
+	private void sendBucks() throws JsonProcessingException {
 		User[] ourUsers = printAllUsers();
-		User choice = (User)console.getChoiceFromOptions(ourUsers);
-
+		Object choice = console.getChoiceFromOptions(ourUsers, "Enter ID of user you are requesting from (0 to cancel): ");
+		if (choice != null && !choice.equals(-1)) {
+			User users = (User)choice;
+			BigDecimal amountToTransfer = console.getUserInputBigDecimal("Enter amount");
+			accountService.sendTransfer(users,amountToTransfer,currentUser);
+		}
 	}
 
 	private void requestBucks() {
@@ -119,10 +127,43 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		return allUsers;
 	}
 
+	private Transfer[] printAllTransfers(){
+		System.out.println(LINE + "\nTransfers \nID			From/To			Amount\n" + LINE);
+		Transfer[] allTransfers = accountService.getAllTransfers();
+		for (int i = 0; i < allTransfers.length; i++) {
+			if (currentUser.getUser().getUsername().equals(allTransfers[i].getUserFrom())) {
+				int id = allTransfers[i].getTransferId();
+				String username = allTransfers[i].getUserTo();
+				BigDecimal amount = allTransfers[i].getAmount();
+				System.out.println(id + "		To: " + username + "		$ " + amount);
+			}else{
+				int id = allTransfers[i].getTransferId();
+				String username = allTransfers[i].getUserFrom();
+				BigDecimal amount = allTransfers[i].getAmount();
+				System.out.println(id + "		From: " + username + "		$ " + amount);
+			}
+		}
+		System.out.println(LINE + "\n");
+		return allTransfers;
+	}
+
+	private void printTransferDetails(Transfer transfer){
+		System.out.println(LINE + "\nTransfer Details\n" + LINE);
+		System.out.println("Id: " + transfer.getTransferId());
+		System.out.println("From: " + transfer.getUserFrom());
+		System.out.println("To: " + transfer.getUserTo());
+		if(transfer.getTransferTypeId() == 2) {
+			System.out.println("Type: Send");
+		}if(transfer.getTransferStatusId() == 2){
+			System.out.println("Status: Approved");
+		}
+		System.out.println("Amount: $" + transfer.getAmount());
+	}
+
 
 	private void registerAndLogin() {
 		while(!isAuthenticated()) {
-			String choice = (String)console.getChoiceFromOptions(LOGIN_MENU_OPTIONS);
+			String choice = (String)console.getChoiceFromOptionsDisplaysMenu(LOGIN_MENU_OPTIONS);
 			if (LOGIN_MENU_OPTION_LOGIN.equals(choice)) {
 				login();
 			} else if (LOGIN_MENU_OPTION_REGISTER.equals(choice)) {
