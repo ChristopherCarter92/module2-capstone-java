@@ -6,6 +6,7 @@ import com.techelevator.tenmo.models.UserCredentials;
 import com.techelevator.tenmo.services.AccountService;
 import com.techelevator.tenmo.services.AuthenticationService;
 import com.techelevator.tenmo.services.AuthenticationServiceException;
+import com.techelevator.tenmo.services.ServerConnectionException;
 import com.techelevator.view.ConsoleService;
 
 public class App {
@@ -74,7 +75,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 	}
 
 	private void viewCurrentBalance() {
-    	int id = currentUser.getUserId();
+    	int id = currentUser.getUser().getId();
     	Account account = accountService.getCurrentBalance(id);
     	System.out.println("Your current balance is: $" + account.getBalance());
 	}
@@ -127,7 +128,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
             	authenticationService.register(credentials);
             	isRegistered = true;
             	System.out.println("Registration successful. You can now login.");
-            } catch(AuthenticationServiceException e) {
+            } catch(AuthenticationServiceException | ServerConnectionException e) {
             	System.out.println("REGISTRATION ERROR: "+e.getMessage());
 				System.out.println("Please attempt to register again.");
             }
@@ -143,7 +144,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		    try {
 				currentUser = authenticationService.login(credentials);
 				accountService.setAuthToken(currentUser.getToken());
-			} catch (AuthenticationServiceException e) {
+			} catch (AuthenticationServiceException | ServerConnectionException e) {
 				System.out.println("LOGIN ERROR: "+e.getMessage());
 				System.out.println("Please attempt to login again.");
 			}

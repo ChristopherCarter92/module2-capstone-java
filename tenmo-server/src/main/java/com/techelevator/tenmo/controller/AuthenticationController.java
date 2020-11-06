@@ -44,7 +44,7 @@ public class AuthenticationController {
 
         User user = userDAO.findByUsername(loginDto.getUsername());
 
-        return new LoginResponse(jwt, user.getId());
+        return new LoginResponse(jwt, user);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
@@ -61,19 +61,19 @@ public class AuthenticationController {
     private static class LoginResponse {
 
         private final String token;
-        private final long userId;
+        private final User user;
 
-        public LoginResponse(String token, long userId) {
+        public LoginResponse(String token, User user) {
             this.token = token;
-            this.userId = userId;
+            this.user = user;
         }
 
         public String getToken() {
             return token;
         }
 
-        public long getUserId() {
-            return userId;
+        public User getUser() {
+            return user;
         }
 
     }

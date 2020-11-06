@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
@@ -24,12 +25,12 @@ public class AuthenticationService {
         this.baseUrl = url;
     }
 
-    public AuthenticatedUser login(UserCredentials credentials) throws AuthenticationServiceException {
+    public AuthenticatedUser login(UserCredentials credentials) throws AuthenticationServiceException, ServerConnectionException {
         HttpEntity<UserCredentials> entity = createRequestEntity(credentials);
         return sendLoginRequest(entity);
     }
 
-    public void register(UserCredentials credentials) throws AuthenticationServiceException {
+    public void register(UserCredentials credentials) throws AuthenticationServiceException, ServerConnectionException {
     	HttpEntity<UserCredentials> entity = createRequestEntity(credentials);
         sendRegistrationRequest(entity);
     }
@@ -41,23 +42,29 @@ public class AuthenticationService {
     	return entity;
     }
 
-	private AuthenticatedUser sendLoginRequest(HttpEntity<UserCredentials> entity) throws AuthenticationServiceException {
+	private AuthenticatedUser sendLoginRequest(HttpEntity<UserCredentials> entity) throws AuthenticationServiceException, ServerConnectionException {
 		try {	
 			ResponseEntity<AuthenticatedUser> response = restTemplate.exchange(baseUrl + "token", HttpMethod.POST, entity, AuthenticatedUser.class);
 			return response.getBody(); 
 		} catch(RestClientResponseException ex) {
 			String message = createLoginExceptionMessage(ex);
 			throw new AuthenticationServiceException(message);
-        }
+        } catch (ResourceAccessException e) {
+			String message = "Not connected to server. Please reconnect and try again.";
+			throw new ServerConnectionException(message);
+		}
 	}
 
-    private ResponseEntity<Map> sendRegistrationRequest(HttpEntity<UserCredentials> entity) throws AuthenticationServiceException {
+    private ResponseEntity<Map> sendRegistrationRequest(HttpEntity<UserCredentials> entity) throws AuthenticationServiceException, ServerConnectionException {
     	try {
 			return restTemplate.exchange(baseUrl + "users", HttpMethod.POST, entity, Map.class);
 		} catch(RestClientResponseException ex) {
 			String message = createRegisterExceptionMessage(ex);
 			throw new AuthenticationServiceException(message);
-        }
+        } catch (ResourceAccessException e) {
+			String message = "Not connected to server. Please reconnect and try again.";
+			throw new ServerConnectionException(message);
+		}
 	}
 
 	private String createLoginExceptionMessage(RestClientResponseException ex) {

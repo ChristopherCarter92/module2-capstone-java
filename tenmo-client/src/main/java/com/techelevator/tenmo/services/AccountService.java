@@ -1,6 +1,7 @@
 package com.techelevator.tenmo.services;
 
 import com.techelevator.tenmo.models.Account;
+import com.techelevator.tenmo.models.User;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -10,6 +11,8 @@ import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AccountService {
 
@@ -33,6 +36,18 @@ public class AccountService {
             result = null;
             System.out.println("Could not get current balance.");
         }
+        return result;
+    }
+
+    public List<User> getAllUsers() {
+        List<User> result = new ArrayList<>();
+        try {
+            HttpEntity<User> entity = restTemplate.exchange(baseUrl + "users", HttpMethod.GET, makeAuthEntity(), User.class);
+//            result = entity.getBody();
+        } catch (ResourceAccessException | RestClientResponseException e){
+
+        }
+
         return result;
     }
 
