@@ -77,43 +77,80 @@ public class JdbcTransferDAO implements TransferDAO {
     @Override
     public boolean checksBeforeTransfer(Principal principal, Account depositAccount, Account withdrawalAccount, BigDecimal amount) {
         boolean result = false;
-        boolean isPositive = amount.compareTo(BigDecimal.ZERO) > 0;
-        int principalId = userDAO.findIdByUsername(principal.getName());
-        int depositId = depositAccount.getUserId();
-        int withdrawalId = withdrawalAccount.getUserId();
-
-        if (principalId == withdrawalId) {
-            if (principalId != depositId) {
-                if (isPositive) {
-                    boolean balanceIsEnough = withdrawalAccount.getBalance().compareTo(amount) >= 0;
-                    boolean depositAccountExists = false;
-                    List<User> users = userDAO.findAll();
-                    for (User user : users) {
-                        if (user.getId() == depositId) {
-                            depositAccountExists = true;
-                        }
-                    }
-                    if (balanceIsEnough) {
-                        if (depositAccountExists) {
+        if (checkSameAccountTransfer( principal, withdrawalAccount)){
+            if (checkCannotTransferToSelf(principal, depositAccount)){
+                if (checkNotNegativeAmount(amount)) {
+                    if (checkForSufficientFunds(withdrawalAccount, amount)){
+                        if (checkIfDepositAccountExists(depositAccount)) {
                             result = true;
-                        } else {
-                            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Deposit account does not exist.");
                         }
-                    } else {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient funds.");
                     }
-                } else {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot transfer negative amounts.");
                 }
-            } else {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can not transfer to yourself.");
             }
+        }
+        return result;
+    }
+    private boolean checkSameAccountTransfer(Principal principal, Account withdrawalAccount){
+        boolean result = false;
+        int principalId = userDAO.findIdByUsername(principal.getName());
+        int withdrawalId = withdrawalAccount.getUserId();
+        if (principalId == withdrawalId) {
+            result = true;
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can only transfer from your account.");
         }
         return result;
     }
+    private boolean checkCannotTransferToSelf(Principal principal, Account depositAccount) {
+        boolean result = false;
+        int principalId = userDAO.findIdByUsername(principal.getName());
+        int depositId = depositAccount.getUserId();
+        if (principalId != depositId) {
+            result = true;
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can not transfer to yourself.");
+        }
+        return result;
+    }
+    private boolean checkNotNegativeAmount(BigDecimal amount) {
+        boolean result = false;
+        boolean isPositive = amount.compareTo(BigDecimal.ZERO) > 0;
+        if (isPositive) {
+            result = true;
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot transfer negative amounts.");
+        }
+        return result;
+    }
+    private boolean checkForSufficientFunds(Account withdrawalAccount, BigDecimal amount) {
+        boolean result = false;
+        boolean balanceIsEnough = withdrawalAccount.getBalance().compareTo(amount) >= 0;
 
+        if (balanceIsEnough) {
+            result = true;
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient funds.");
+        }
+        return result;
+    }
+
+    private boolean checkIfDepositAccountExists(Account depositAccount) {
+        int depositId = depositAccount.getUserId();
+        boolean result = false;
+        boolean depositAccountExists = false;
+        List<User> users = userDAO.findAll();
+        for (User user : users) {
+            if (user.getId() == depositId) {
+                depositAccountExists = true;
+            }
+        }
+        if (depositAccountExists) {
+            result = true;
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Deposit account does not exist.");
+        }
+        return result;
+    }
     @Override
     public boolean checkBeforeGettingTransfer(Principal principal, int id) {
         boolean result = false;
