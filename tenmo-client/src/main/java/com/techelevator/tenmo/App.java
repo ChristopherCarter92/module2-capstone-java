@@ -100,7 +100,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 
 	private void sendBucks() throws JsonProcessingException {
 		User[] ourUsers = printAllUsers();
-		Object choice = console.getChoiceFromOptions(ourUsers, "Enter ID of user you are requesting from (0 to cancel): ");
+		Object choice = console.getChoiceFromOptions(ourUsers, "Enter ID of user you are sending to (0 to cancel): ");
 		if (choice != null && !choice.equals(-1)) {
 			User users = (User)choice;
 			BigDecimal amountToTransfer = console.getUserInputBigDecimal("Enter amount");

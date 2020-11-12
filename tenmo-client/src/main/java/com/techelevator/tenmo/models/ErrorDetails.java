@@ -8,14 +8,6 @@ public class ErrorDetails {
     private String error;
     private String path;
 
-    public ErrorDetails(String message, String timestamp, int status, String error, String path){
-        this.message = message;
-        this.timestamp = timestamp;
-        this.status = status;
-        this.error = error;
-        this.path = path;
-
-    }
 
     public String getTimestamp() {
         return timestamp;

@@ -27,6 +27,7 @@ public class JdbcTransferDAO implements TransferDAO {
         this.accountDAO = accountDAO;
     }
 
+    //constant for 2s or sub-queries
     @Override
     public void addTransfer(Account depositAccount, Account withdrawalAccount, BigDecimal amount) {
         Transfer result;
@@ -55,6 +56,7 @@ public class JdbcTransferDAO implements TransferDAO {
         return transfers;
     }
 
+    //put sql in constant
     @Override
     public Transfer getTransferFromId(int id) {
         Transfer transfer;
@@ -90,6 +92,7 @@ public class JdbcTransferDAO implements TransferDAO {
         }
         return result;
     }
+
     private boolean checkSameAccountTransfer(Principal principal, Account withdrawalAccount){
         boolean result = false;
         int principalId = userDAO.findIdByUsername(principal.getName());
@@ -134,6 +137,7 @@ public class JdbcTransferDAO implements TransferDAO {
         return result;
     }
 
+    //check all users takes too much time
     private boolean checkIfDepositAccountExists(Account depositAccount) {
         int depositId = depositAccount.getUserId();
         boolean result = false;

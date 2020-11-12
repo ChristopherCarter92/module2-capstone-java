@@ -59,10 +59,10 @@ public class AccountService {
         }catch(ResourceAccessException e){
             System.out.println("Could not complete transfer.");
         }catch (RestClientResponseException exception){
-//            ObjectMapper mapper = new ObjectMapper();
-//            ErrorDetails details = mapper.readValue(exception.getResponseBodyAsString(), ErrorDetails.class);
-//            System.out.println(details.getMessage());
-            System.out.println(exception.getMessage());
+            ObjectMapper mapper = new ObjectMapper();
+            ErrorDetails details = mapper.readValue(exception.getResponseBodyAsString(), ErrorDetails.class);
+            System.out.println(details.getMessage());
+//            System.out.println(exception.getResponseBodyAsString());
         }
         return result;
     }

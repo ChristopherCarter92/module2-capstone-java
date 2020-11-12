@@ -41,6 +41,7 @@ public class TransferController {
         return result;
     }
 
+    //pass username, not principal
     @RequestMapping(value = "/transfers/{id}", method = RequestMethod.GET)
     public Transfer getTransferFromTransferId(Principal principal, @PathVariable int id) {
         Transfer result;
@@ -52,6 +53,7 @@ public class TransferController {
         return result;
     }
 
+    //pass username, not principal
     @ResponseStatus(HttpStatus.ACCEPTED)
     @RequestMapping(value = "/transfers", method = RequestMethod.POST)
     public void postTransfer(Principal principal, @RequestBody TransferDTO transferDTO) {

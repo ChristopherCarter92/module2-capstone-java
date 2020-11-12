@@ -13,11 +13,9 @@ import java.util.List;
 @RestController
 public class UserController {
 
-    private final TokenProvider tokenProvider;
     private UserDAO userDAO;
 
-    public UserController(TokenProvider tokenProvider, UserDAO userDAO) {
-        this.tokenProvider = tokenProvider;
+    public UserController(UserDAO userDAO) {
         this.userDAO = userDAO;
     }
 

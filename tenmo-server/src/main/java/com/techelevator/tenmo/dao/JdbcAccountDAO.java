@@ -32,10 +32,8 @@ public class JdbcAccountDAO implements AccountDAO {
     @Override
     public Account deposit(Account account, BigDecimal amount) {
         Account result;
-        BigDecimal balance = new BigDecimal(String.valueOf(account.getBalance()));
-        BigDecimal newBalance = balance.add(amount);
-        String query = "UPDATE accounts SET balance = ? WHERE user_id = ?;";
-        jdbcTemplate.update(query, newBalance, account.getUserId());
+        String query = "UPDATE accounts SET balance = balance + ? WHERE user_id = ?;";
+        jdbcTemplate.update(query, amount, account.getUserId());
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet("SELECT account_id, user_id, balance FROM accounts WHERE user_id = ?;", account.getUserId());
         if (rowSet.next()) {
             result = mapRowToAccount(rowSet);
@@ -45,6 +43,7 @@ public class JdbcAccountDAO implements AccountDAO {
         return result;
     }
 
+    //fix
     @Override
     public Account withdrawal(Account account, BigDecimal amount) {
         Account result;

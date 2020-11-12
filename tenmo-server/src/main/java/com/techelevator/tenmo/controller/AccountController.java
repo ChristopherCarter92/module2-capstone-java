@@ -15,17 +15,15 @@ import java.security.Principal;
 @RestController
 public class AccountController {
 
-    private final TokenProvider tokenProvider;
     private AccountDAO accountDAO;
     private UserDAO userDAO;
 
-    public AccountController(TokenProvider tokenProvider, AccountDAO accountDAO, UserDAO userDAO) {
-        this.tokenProvider = tokenProvider;
+    public AccountController(AccountDAO accountDAO, UserDAO userDAO) {
         this.accountDAO = accountDAO;
         this.userDAO = userDAO;
     }
 
-    // maybe not let everyone do this, only logged in user (principal)
+    // change to not need ID
     @RequestMapping(value = "/accounts/{id}", method = RequestMethod.GET)
     public Account getAccountByUserId(@PathVariable int id, Principal principal) {
         Account result;
